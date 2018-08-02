@@ -1,6 +1,7 @@
 var five = require("johnny-five");
-var http = require('http');
 var express = require('express');
+var app = express();
+var server = require('http').Server(app);
 
 var pinBajaToldo=9;
 var pinParaToldo=11;
@@ -25,17 +26,24 @@ var promise = new Promise(function(resolve, reject) {
 });
 //La placa ya está preparada
 promise.then((board)=> {
-  var app = express();
   app.listen(4321);
   app.use(express.static('estaticos'));
   
   app.get('/ponToldo',function(req, res){
       console.log("ponToldo");
+      board.digitalWrite(pinBajaToldo,1);
+      setTimeout(()=>{
+        board.digitalWrite(pinBajaToldo,0);
+      },50);
       estadoToldo="on";
       res.json({resp:"Enviada orden de puesta"});
   });
   app.get('/quitaToldo',function(req, res){
       console.log("quitaToldo");
+      board.digitalWrite(pinSubeToldo,1);
+      setTimeout(()=>{
+        board.digitalWrite(pinSubeToldo,0);
+      },50);
       estadoToldo="off";
       res.json({resp:"Enviada orden de quitado"});
   });
@@ -45,7 +53,7 @@ promise.then((board)=> {
       board.digitalWrite(pinParaToldo,1);
       setTimeout(()=>{
         board.digitalWrite(pinParaToldo,0);
-      },500);
+      },50);
       estadoToldo="half";
       res.json({resp:"Enviada orden de parar Toldo"});
   });
@@ -55,10 +63,7 @@ promise.then((board)=> {
       res.json({resp:estadoToldo});
   });
   
-  app.get('*',function(req, res){
-      console.log("Resto");
-      res.json({resp:"Orden no reconocida"});
-  });
+  
 
 
 }, function(err) {
