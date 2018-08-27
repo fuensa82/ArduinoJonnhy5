@@ -2,15 +2,20 @@ var five = require("johnny-five");
 var express = require('express');
 var app = express();
 var server = require('http').Server(app);
+var utils = require("./modulos/utils");
 
 var pinBajaToldo=9;
 var pinParaToldo=11;
 var pinSubeToldo=10;
 var pinLed13=13;
 var estadoToldo="off";
+var ultimaHora; //indica la ultima hora a la que se quitó o puso por completo el toldo
+
+console.log(utils.getFechaYHora());
 
 var board = new five.Board({
-  port: "COM4"
+  //port: "COM4"
+  port: "/dev/ttyACM0"
 });
 
 
@@ -36,6 +41,7 @@ promise.then((board)=> {
         board.digitalWrite(pinBajaToldo,0);
       },50);
       estadoToldo="on";
+      ultimaHora=utils.getFechaYHora();
       res.json({resp:"Enviada orden de puesta"});
   });
   app.get('/quitaToldo',function(req, res){
@@ -45,6 +51,7 @@ promise.then((board)=> {
         board.digitalWrite(pinSubeToldo,0);
       },50);
       estadoToldo="off";
+      ultimaHora=utils.getFechaYHora();
       res.json({resp:"Enviada orden de quitado"});
   });
   
@@ -55,6 +62,7 @@ promise.then((board)=> {
         board.digitalWrite(pinParaToldo,0);
       },50);
       estadoToldo="half";
+      ultimaHora=utils.getFechaYHora();
       res.json({resp:"Enviada orden de parar Toldo"});
   });
   
@@ -62,9 +70,10 @@ promise.then((board)=> {
       console.log("estadoToldo");
       res.json({resp:estadoToldo});
   });
-  
-  
 
+  app.get('/hora', function(req,res){
+      res.json({resp:ultimaHora});
+  });
 
 }, function(err) {
   console.log(err);
