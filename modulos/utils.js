@@ -23,5 +23,65 @@ function rellenarPorIzq(num,longTotal,caracter){
     var aux=relleno+num;
     return aux.substring(aux.length-longTotal);
 }
+/**
+ * 
+ */
+function getTimeMillis(){
+    var hora=new Date();
+    return hora.getTime();
+}
+/**
+ * Funcion que solo se debe utilizar a la hora de poner y parar el toldo, nunca cuando se pare. Guardará el estado y la hora de ejecucion
+ * @param {Accion enviada al toldo} accion
+ */
+function guardaEstado(accion){
+    estadoToldo=estado;
+    ultimaAccion=estado;
+    timeMillis=getTimeMillis();
+    ultimaHora=getFechaYHora();
+}
+
+function paradaDeToldo(){
+    //estado="half";
+    if(estadoToldo=="half"){
+        return
+    }
+    ultimaHora=getFechaYHora();
+    var timeMillisNuevo=getTimeMillis();
+    timeTotal=timeMillisNuevo-timeMillis;
+    
+    console.log("timeMillis: "+timeMillis);
+    console.log("timeMillisNuevo "+timeMillisNuevo);
+    console.log("millisEstadoActual "+millisEstadoActual);
+    
+    timeMillis=timeMillisNuevo;
+    if(parseInt(timeTotal)>51000){
+        //si el tiempo transcurrido es mayor de 51s es que ya ha terminado el todo.
+        if(estadoToldo=="on"){
+            millisEstadoActual=51000;
+        }else{
+            millisEstadoActual=0;
+        }
+    }else{
+        if(estadoToldo=="on"){
+            millisEstadoActual+=timeTotal;
+        }else{
+            millisEstadoActual-=timeTotal;
+        }
+        if(millisEstadoActual<0){
+            millisEstadoActual=0;
+            estadoToldo="off";
+        }else if(millisEstadoActual>51000){
+            millisEstadoActual=51000;
+            estadoToldo="on";
+        }else{
+            estadoToldo="half";
+        }
+    }
+}
 
 exports.getFechaYHora=getFechaYHora;
+exports.getTimeMillis=getTimeMillis;
+exports.rellenarPorIzq=rellenarPorIzq;
+exports.paradaDeToldo=paradaDeToldo;
+exports.guardaEstado=guardaEstado;
