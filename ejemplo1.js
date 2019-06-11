@@ -10,7 +10,7 @@ var pinSubeToldo=10;
 var pinLed13=13;
 estadoToldo="off";
 ultimaAccion="off";
-ultimaHora=utils.getFechaYHora(); // 2 indica la ultima hora a la que se quitó o puso por completo el toldo
+ultimaHora=utils.getFechaYHora(); // 3 indica la ultima hora a la que se quitó o puso por completo el toldo
 timeMillis=utils.getTimeMillis();
 millisEstadoActual=0;
 
