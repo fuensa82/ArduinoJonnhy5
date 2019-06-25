@@ -4,11 +4,14 @@ var app = express();
 var server = require('http').Server(app);
 var utils = require("./modulos/utils");
 
+var pinGrifoPrincipal=8;
 var pinBajaToldo=9;
 var pinParaToldo=11;
 var pinSubeToldo=10;
 var pinLed13=13;
+var tiempoRiego=5000; //5 segundos
 estadoToldo="off";
+estadoRiego="off";
 ultimaAccion="off";
 ultimaHora=utils.getFechaYHora(); // 3 indica la ultima hora a la que se quitó o puso por completo el toldo
 timeMillis=utils.getTimeMillis();
@@ -24,6 +27,7 @@ var board = new five.Board({
 
 var promise = new Promise(function(resolve, reject) {
   board.on("ready", function() {
+    this.pinMode(pinGrifoPrincipal, this.MODES.OUTPUT);
     this.pinMode(pinBajaToldo, this.MODES.OUTPUT);
     this.pinMode(pinParaToldo, this.MODES.OUTPUT);
     this.pinMode(pinSubeToldo, this.MODES.OUTPUT);
@@ -36,7 +40,17 @@ var promise = new Promise(function(resolve, reject) {
 promise.then((board)=> {
   app.listen(4321);
   app.use(express.static('estaticos'));
-  
+
+  app.get('/riega',function(req, res){
+      console.log("riega");
+      board.digitalWrite(pinGrifoPrincipal,1);
+      setTimeout(()=>{
+        board.digitalWrite(pinGrifoPrincipal,0);
+        estadoRiego="off";
+      },tiempoRiego);
+      estadoRiego="on";
+      res.json({resp:"Enviada orden de riego"});
+  });
   app.get('/ponToldo',function(req, res){
       console.log("ponToldo");
       board.digitalWrite(pinBajaToldo,1);
@@ -76,6 +90,16 @@ promise.then((board)=> {
         res.json({resp:estadoToldo});
       } 
   });
+
+  app.get('/estado',function(req, res){
+    console.log("estado");
+    if(estadoToldo=="half"){
+      var aux=Math.round((millisEstadoActual/10)/51);
+      res.json({resp:(aux+" %"),resp2:estadoRiego});
+    }else{
+      res.json({resp:estadoToldo,resp2:estadoRiego});
+    } 
+});
 
   app.get('/hora', function(req,res){
       res.json({resp:ultimaHora});
