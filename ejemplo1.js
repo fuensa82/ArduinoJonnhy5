@@ -4,7 +4,7 @@ var app = express();
 var server = require('http').Server(app);
 var utils = require("./modulos/utils");
 
-var pinGrifoPrincipal=8;
+var pinGrifoPrincipal=12;
 var pinBajaToldo=9;
 var pinParaToldo=11;
 var pinSubeToldo=10;
@@ -40,16 +40,23 @@ var promise = new Promise(function(resolve, reject) {
 promise.then((board)=> {
   app.listen(4321);
   app.use(express.static('estaticos'));
-
+  board.digitalWrite(pinGrifoPrincipal,1);
   app.get('/riega',function(req, res){
       console.log("riega");
-      board.digitalWrite(pinGrifoPrincipal,1);
+      board.digitalWrite(pinGrifoPrincipal,0);
       setTimeout(()=>{
-        board.digitalWrite(pinGrifoPrincipal,0);
+        board.digitalWrite(pinGrifoPrincipal,1);
         estadoRiego="off";
+        console.log("Riego parado automaticamente");
       },tiempoRiego);
       estadoRiego="on";
       res.json({resp:"Enviada orden de riego"});
+  });
+  app.get('/paraRiego',function(req, res){
+      board.digitalWrite(pinGrifoPrincipal,1);
+      console.log("riego parado");
+      estadoRiego="off";
+      res.json({resp:"Enviada orden de parar riego"});
   });
   app.get('/ponToldo',function(req, res){
       console.log("ponToldo");
@@ -91,15 +98,15 @@ promise.then((board)=> {
       } 
   });
 
-  app.get('/estado',function(req, res){
-    console.log("estado");
-    if(estadoToldo=="half"){
-      var aux=Math.round((millisEstadoActual/10)/51);
-      res.json({resp:(aux+" %"),resp2:estadoRiego});
-    }else{
-      res.json({resp:estadoToldo,resp2:estadoRiego});
-    } 
-});
+    app.get('/estado',function(req, res){
+      console.log("estado");
+      if(estadoToldo=="half"){
+        var aux=Math.round((millisEstadoActual/10)/51);
+        res.json({resp:(aux+" %"),resp2:estadoRiego});
+      }else{
+        res.json({resp:estadoToldo,resp2:estadoRiego});
+      } 
+  });
 
   app.get('/hora', function(req,res){
       res.json({resp:ultimaHora});
