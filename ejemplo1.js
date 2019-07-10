@@ -8,7 +8,7 @@ var pinGrifoPrincipal=12;
 var pinBajaToldo=9;
 var pinParaToldo=11;
 var pinSubeToldo=10;
-var pinLed13=13;
+var pinHumedad=0;
 var tiempoRiego=3*60*1000; //3 MINUTOS
 estadoToldo="off";
 estadoRiego="off";
@@ -16,6 +16,9 @@ ultimaAccion="off";
 ultimaHora=utils.getFechaYHora(); // 3 indica la ultima hora a la que se quitó o puso por completo el toldo
 timeMillis=utils.getTimeMillis();
 millisEstadoActual=0;
+//Variales riego
+ultimaHoraRiego=utils.getFechaYHora();
+ultimaHoraRiegoCompleto=utils.getFechaYHora();
 
 console.log(utils.getFechaYHora());
 
@@ -24,14 +27,14 @@ var board = new five.Board({
   port: "/dev/ttyACM0"
 });
 
-
+//Lo hacemos con promesas para no meter todo el servidor REST dentro de board.on
 var promise = new Promise(function(resolve, reject) {
   board.on("ready", function() {
     this.pinMode(pinGrifoPrincipal, this.MODES.OUTPUT);
     this.pinMode(pinBajaToldo, this.MODES.OUTPUT);
     this.pinMode(pinParaToldo, this.MODES.OUTPUT);
     this.pinMode(pinSubeToldo, this.MODES.OUTPUT);
-    this.pinMode(pinLed13, this.MODES.OUTPUT);
+    this.pinMode(pinHumedad, this.MODES.ANALOG);
     resolve(this);
   });
 
@@ -41,6 +44,18 @@ promise.then((board)=> {
   app.listen(4321);
   app.use(express.static('estaticos'));
   board.digitalWrite(pinGrifoPrincipal,1);
+  app.get('/humedad',function(rep,res){
+      var promise = new Promise(function(resolve, reject) {
+        board.analogRead(pinHumedad, function(humedad) {
+          console.log(humedad);
+          resolve(humedad);
+          return;
+        });
+      });
+      promise.then(function(humedad){
+        res.json({humedad:humedad});
+      });
+  });
   app.get('/riega',function(req, res){
       console.log("riega");
       board.digitalWrite(pinGrifoPrincipal,0);
@@ -48,6 +63,7 @@ promise.then((board)=> {
         board.digitalWrite(pinGrifoPrincipal,1);
         estadoRiego="off";
         console.log("Riego parado automaticamente");
+        ultimaHoraRiegoCompleto=utils.getFechaYHora();
       },tiempoRiego);
       estadoRiego="on";
       res.json({resp:"Enviada orden de riego"});
@@ -56,6 +72,7 @@ promise.then((board)=> {
       board.digitalWrite(pinGrifoPrincipal,1);
       console.log("riego parado");
       estadoRiego="off";
+      ultimaHoraRiego=utils.getFechaYHora();
       res.json({resp:"Enviada orden de parar riego"});
   });
   app.get('/ponToldo',function(req, res){
@@ -110,6 +127,9 @@ promise.then((board)=> {
 
   app.get('/hora', function(req,res){
       res.json({resp:ultimaHora});
+  });
+  app.get('/horasRiego', function(req,res){
+      res.json({ultimaHoraRiego:ultimaHoraRiego, ultimaHoraRiegoCompleto:ultimaHoraRiegoCompleto});
   });
 
 }, function(err) {
