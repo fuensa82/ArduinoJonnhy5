@@ -10,6 +10,8 @@ var pinParaToldo=11;
 var pinSubeToldo=10;
 var pinHumedad=0;
 var tiempoRiego=3*60*1000; //3 MINUTOS
+var sensorHumedad;
+var humedadSuelo;
 estadoToldo="off";
 estadoRiego="off";
 ultimaAccion="off";
@@ -34,7 +36,12 @@ var promise = new Promise(function(resolve, reject) {
     this.pinMode(pinBajaToldo, this.MODES.OUTPUT);
     this.pinMode(pinParaToldo, this.MODES.OUTPUT);
     this.pinMode(pinSubeToldo, this.MODES.OUTPUT);
-    this.pinMode(pinHumedad, this.MODES.ANALOG);
+    //this.pinMode(pinHumedad, this.MODES.ANALOG);
+    sensorHumedad = new five.Sensor({pin:pinHumedad,freq:10000});
+    sensorHumedad.on("data", function() {
+      humedadSuelo=sensorHumedad.scaleTo(50, 0);
+      console.log("Humedad: "+humedadSuelo);
+    });
     resolve(this);
   });
 
@@ -45,16 +52,7 @@ promise.then((board)=> {
   app.use(express.static('estaticos'));
   board.digitalWrite(pinGrifoPrincipal,1);
   app.get('/humedad',function(rep,res){
-      var promise = new Promise(function(resolve, reject) {
-        board.analogRead(pinHumedad, function(humedad) {
-          console.log(humedad);
-          resolve(humedad);
-          return;
-        });
-      });
-      promise.then(function(humedad){
-        res.json({humedad:humedad});
-      });
+    res.json({humedad:humedadSuelo});
   });
   app.get('/riega',function(req, res){
       console.log("riega");
