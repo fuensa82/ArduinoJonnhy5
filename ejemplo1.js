@@ -25,8 +25,8 @@ ultimaHoraRiegoCompleto=utils.getFechaYHora();
 console.log(utils.getFechaYHora());
 
 var board = new five.Board({
-  //port: "COM4"
-  port: "/dev/ttyACM0"
+  port: "COM5"
+  //port: "/dev/ttyACM0"
 });
 
 //Lo hacemos con promesas para no meter todo el servidor REST dentro de board.on

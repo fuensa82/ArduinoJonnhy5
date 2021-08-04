@@ -35,8 +35,8 @@ function getTimeMillis(){
  * @param {Accion enviada al toldo} accion
  */
 function guardaEstado(accion){
-    estadoToldo=estado;
-    ultimaAccion=estado;
+    //estadoToldo=estado;
+    //ultimaAccion=estado;
     timeMillis=getTimeMillis();
     ultimaHora=getFechaYHora();
 }
