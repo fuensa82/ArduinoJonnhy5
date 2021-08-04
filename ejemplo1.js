@@ -25,8 +25,8 @@ ultimaHoraRiegoCompleto=utils.getFechaYHora();
 console.log(utils.getFechaYHora());
 
 var board = new five.Board({
-  port: "COM5"
-  //port: "/dev/ttyACM0"
+  //port: "COM5"
+  port: "/dev/ttyACM0"
 });
 
 //Lo hacemos con promesas para no meter todo el servidor REST dentro de board.on
@@ -36,12 +36,13 @@ var promise = new Promise(function(resolve, reject) {
     this.pinMode(pinBajaToldo, this.MODES.OUTPUT);
     this.pinMode(pinParaToldo, this.MODES.OUTPUT);
     this.pinMode(pinSubeToldo, this.MODES.OUTPUT);
+    //Lanzador para activar el medidor de humedad
     //this.pinMode(pinHumedad, this.MODES.ANALOG);
-    sensorHumedad = new five.Sensor({pin:pinHumedad,freq:10000});
+    /*sensorHumedad = new five.Sensor({pin:pinHumedad,freq:10000});
     sensorHumedad.on("data", function() {
       humedadSuelo=sensorHumedad.scaleTo(50, 0);
       console.log("Humedad: "+humedadSuelo);
-    });
+    });*/
     resolve(this);
   });
 
